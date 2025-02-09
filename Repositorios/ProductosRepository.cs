@@ -31,7 +31,7 @@ public class ProductosRepository()
         }
     }
 
-    public void ModificarProducto(int id, Productos producto){
+    public void ModificarProducto(Productos producto){ 
 
         string queryString = "UPDATE Productos SET Descripcion = @Descripcion, Precio = @Precio WHERE idProducto = @Id;";
 
@@ -40,7 +40,7 @@ public class ProductosRepository()
             connection.Open();
             using (var command = new SqliteCommand(queryString, connection))
             {
-                command.Parameters.AddWithValue("@Id", id);
+                command.Parameters.AddWithValue("@Id", producto.IdProducto);
                 command.Parameters.AddWithValue("@Descripcion", producto.Descripcion);
                 command.Parameters.AddWithValue("@Precio", producto.Precio);
                 
@@ -108,41 +108,21 @@ public class ProductosRepository()
 
     public void EliminarProducto(int id)
     {
-        string queryString = "DELETE FROM Productos WHERE idProducto = @Id;";
+        string query = "DELETE FROM Productos WHERE idProducto = @Id;";
+        string query2 = @"DELETE FROM PresupuestosDetalle WHERE idProducto = @id;";
+
 
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
-            using (var command = new SqliteCommand(queryString, connection))
-            {
-                command.Parameters.AddWithValue("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            SqliteCommand command = new SqliteCommand(query2,connection);
+            SqliteCommand command2 = new SqliteCommand(query,connection);
+            command.Parameters.AddWithValue("@Id", id);
+            command2.Parameters.AddWithValue("@id", id);
+            command2.ExecuteNonQuery();
+            command.ExecuteNonQuery();
+            connection.Close();            
+
         }
     }
 }
-
-/*internal class SQLiteConnection : IDisposable
-{
-    public SQLiteConnection(stringconnectionString)
-    {
-    ConnectionString =connectionString;
-    }
-
-    public stringConnectionString { get; }
-
-    public void Dispose()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal void Close()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal void Open()
-    {
-        throw new NotImplementedException();
-    }
-}*/

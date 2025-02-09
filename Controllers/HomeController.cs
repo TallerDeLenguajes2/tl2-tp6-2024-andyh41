@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using tl2_tp6_2024_andyh41.Models;
+using Models;
 
-namespace tl2_tp6_2024_andyh41.Controllers;
+namespace Controllers;
 
 public class HomeController : Controller
 {

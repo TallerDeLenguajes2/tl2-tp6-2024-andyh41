@@ -10,16 +10,24 @@ namespace Models;
 
 public class Presupuestos
 {
+    public static float IVA = 0.21f;
+
+    private static int autoincremento = 1;
     private int idPresupuesto;
+    
     private string nombreDestinatario;
+
     private List<PresupuestoDetalle> detalle= new List<PresupuestoDetalle>();
 
-    public Presupuestos(int idPresupuesto, string nombreDestinatario)
+    public Presupuestos(string nombreDestinatario)
     {
-        IdPresupuesto = idPresupuesto;
+        IdPresupuesto = ++autoincremento;
         this.NombreDestinatario = nombreDestinatario;
     }
-    public Presupuestos(){}
+    public Presupuestos(){
+        IdPresupuesto = ++autoincremento;
+        nombreDestinatario = string.Empty;
+    }
 
     public int IdPresupuesto { get => idPresupuesto; set => idPresupuesto = value; }
     public string NombreDestinatario { get => nombreDestinatario; set => nombreDestinatario = value; }
@@ -30,21 +38,11 @@ public class Presupuestos
     }
 
     public double MontoPresupuestoConIva() {
-        return  this.MontoPresupuesto()*1.21;
+        return  this.MontoPresupuesto()* (1 + IVA);
     }
 
     public int CantidadProductos() {
         return this.Detalle.Sum(d=> d.Cantidad);
     }
-
-    [JsonConstructor]  // Indica que este es el constructor que debe usar el deserializador
-    public Presupuestos(int idPresupuesto, string nombreDestinatario, List<PresupuestoDetalle> detalle)
-    {
-        IdPresupuesto = idPresupuesto;
-        this.NombreDestinatario = nombreDestinatario;
-        this.Detalle = detalle ?? new List<PresupuestoDetalle>();
-    }
-
-
     
 }
