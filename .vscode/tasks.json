@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/tl2-tp6-2024-andyh41.csproj",
+                "${workspaceFolder}/tl2-tp6-2024-andyh41.snl",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/tl2-tp6-2024-andyh41.csproj",
+                "${workspaceFolder}/tl2-tp6-2024-andyh41.snl",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/tl2-tp6-2024-andyh41.csproj"
+                "${workspaceFolder}/tl2-tp6-2024-andyh41.snl"
             ],
             "problemMatcher": "$msCompile"
         }

@@ -1,21 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using Microsoft.Data.Sqlite;
 using Models;
 
 namespace Repositorios; 
 
-public class PresupuestosRepository()
+public class PresupuestosRepository
 {
-    private readonly string connectionString = "Data Source=Db/Tienda.db;Cache=Shared";
+    private readonly string connectionString = @"Data Source=db/Tienda.db;Cache=Shared";
 
     public void CrearPresupuesto(Presupuestos pres)
     {
         // primero modifica la tabla presupuestos, agregando nombre y fecha
-        string queryString = "INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha);";
+        string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha);";
 
         using (var connection = new SqliteConnection(connectionString))
         {
@@ -116,7 +111,7 @@ public class PresupuestosRepository()
 
 
     public void AgregarDetalle(int id, int producto, int cantidad){
-        string queryString = "INSERT INTO PresupuestosDetalle (idPresupuesto, idProducto, Cantidad) VALUES (@Idpres, @Idprod, @Cantidad);";
+        string queryString = @"INSERT INTO PresupuestosDetalle (idPresupuesto, idProducto, Cantidad) VALUES (@Idpres, @Idprod, @Cantidad);";
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
@@ -132,7 +127,7 @@ public class PresupuestosRepository()
     }
 
     public void EliminarDetalle(int id, int producto){
-        string queryString = "DELETE FROM PresupuestosDetalle WHERE idPresupuesto=@Idpres AND idProducto = @Idprod;";
+        string queryString = @"DELETE FROM PresupuestosDetalle WHERE idPresupuesto=@Idpres AND idProducto = @Idprod;";
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();

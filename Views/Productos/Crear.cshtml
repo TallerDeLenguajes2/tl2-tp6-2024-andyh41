@@ -4,7 +4,7 @@
 
     <h2 class="border-bottom my-3 w-50 mx-auto">Crear Producto</h2>
 
-    <form asp-action="Crear" method="post">
+    <form  asp-controller= "Productos" asp-action="Crear" method="post">
         <div class="form-group">
             <label asp-for="IdProducto">ID del Producto</label>
             <input asp-for="IdProducto" class="form-control" required />
