@@ -63,7 +63,7 @@ public class PresupuestosController : Controller
         return View(presupuesto);
     }
 
-    [HttpPost] // agregar a presupuestos repository la funcion modificar presupuesto
+    [HttpPost] 
     public IActionResult Modificar(Presupuestos presupuesto)
     {
         if (ModelState.IsValid)
@@ -87,7 +87,7 @@ public class PresupuestosController : Controller
         return View(presupuesto);
     }
 
-    [HttpPost]
+    [HttpGet]
     public IActionResult ConfirmarEliminacion(int id)
     {
         _repositorioPresupuestos.EliminarPresupuesto(id);
@@ -114,22 +114,22 @@ public class PresupuestosController : Controller
     }
 
 
-
-        public IActionResult EliminarDetalle(int id)
+    [HttpGet]
+    public IActionResult EliminarDetalle(int id)
     {
         Presupuestos presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
         ViewData["Productos"] = presupuesto.Detalle.Select(p => new SelectListItem
         {
             Value = p.Producto.IdProducto.ToString(), 
             Text = p.Producto.Descripcion 
-        }).ToList();
+        });
 
         return View(id);
     }
 
-    [HttpPost]
 
-    public IActionResult EliminarDetalle(int idPresupuesto, int idProducto)
+    [HttpPost]
+    public IActionResult EliminarElDetalle(int idPresupuesto, int idProducto)
     {
         _repositorioPresupuestos.EliminarDetalle(idPresupuesto, idProducto);
         return RedirectToAction (nameof(Index));

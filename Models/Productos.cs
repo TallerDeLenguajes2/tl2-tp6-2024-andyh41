@@ -6,6 +6,7 @@ public class Productos
     private string descripcion;
     private int precio;
 
+    public Productos(){}
     public Productos(int idProducto, string descripcion, int precio)
     {
         this.idProducto = idProducto;

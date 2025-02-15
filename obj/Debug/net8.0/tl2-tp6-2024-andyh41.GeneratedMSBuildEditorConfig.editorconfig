@@ -26,6 +26,34 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/AgregarProductoDetalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXEFncmVnYXJQcm9kdWN0b0RldGFsbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXENyZWFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/Eliminar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXEVsaW1pbmFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/EliminarDetalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXEVsaW1pbmFyRGV0YWxsZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/Modificar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXE1vZGlmaWNhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/tl2-tp6-2024-andyh41/Views/Presupuestos/VerPresupuesto.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJlc3VwdWVzdG9zXFZlclByZXN1cHVlc3RvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/tl2-tp6-2024-andyh41/Views/Productos/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUHJvZHVjdG9zXENyZWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 

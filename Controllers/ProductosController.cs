@@ -70,7 +70,7 @@ public class ProductosController : Controller
         return View(producto);
     }
 
-    [HttpPost]
+    [HttpGet]
     public IActionResult ConfirmarEliminacion(int id)
     {
         _repositorioProductos.EliminarProducto(id);

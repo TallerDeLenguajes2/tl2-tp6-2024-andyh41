@@ -5,11 +5,11 @@ namespace Repositorios
 {
     public class ProductosRepository
     {
-        private readonly string connectionString = @"Data Source=db/Tienda.db;Cache=Shared";
+        private readonly string connectionString = "Data Source=db/Tienda.db;Cache=Shared";
 
         public void CrearProducto(Productos producto)
         {
-            const string sqlQuery = @"INSERT INTO Productos (Descripcion, Precio) VALUES (@Descripcion, @Precio);";
+            const string sqlQuery = @"INSERT INTO Productos (Descripcion, Precio) VALUES (@Descripcion, @Precio)";
 
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
@@ -21,7 +21,7 @@ namespace Repositorios
 
         public void ModificarProducto(Productos producto)
         {
-            const string sqlQuery = @"UPDATE Productos SET Descripcion = @Descripcion, Precio = @Precio WHERE idProducto = @Id;";
+            const string sqlQuery = @"UPDATE Productos SET Descripcion = @Descripcion, Precio = @Precio WHERE idProducto = @Id";
 
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
@@ -35,13 +35,13 @@ namespace Repositorios
         public List<Productos> ListarProductos()
         {
             var productos = new List<Productos>();
-            const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos;";
+            const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos";
 
             using (var connection = new SqliteConnection(connectionString)){
 
                 connection.Open();
 
-                using (var command = new SqliteCommand(sqlQuery, connection))
+                SqliteCommand command = new SqliteCommand(sqlQuery, connection);
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -54,14 +54,14 @@ namespace Repositorios
                         );
                         productos.Add(producto);
                     }
-                }    
+                }
             }
             return productos;
         }
 
         public Productos DetallarProducto(int id)
         {
-            const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos WHERE idProducto = @Id;";
+            const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos WHERE idProducto = @Id";
 
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
@@ -82,8 +82,8 @@ namespace Repositorios
 
         public void EliminarProducto(int id)
         {
-            const string deleteProductQuery = @"DELETE FROM Productos WHERE idProducto = @Id;";
-            const string deleteDetailsQuery = @"DELETE FROM PresupuestosDetalle WHERE idProducto = @Id;";
+            const string deleteProductQuery = @"DELETE FROM Productos WHERE idProducto = @Id";
+            const string deleteDetailsQuery = @"DELETE FROM PresupuestosDetalle WHERE idProducto = @Id";
 
             using var connection = new SqliteConnection(connectionString);
             connection.Open();
@@ -99,6 +99,8 @@ namespace Repositorios
                 command.Parameters.AddWithValue("@Id", id);
                 command.ExecuteNonQuery();
             }
+
+            connection.Close();
         }
     }
 }

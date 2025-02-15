@@ -10,7 +10,7 @@ public class PresupuestosRepository
     public void CrearPresupuesto(Presupuestos pres)
     {
         // primero modifica la tabla presupuestos, agregando nombre y fecha
-        string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha);";
+        string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha)";
 
         using (var connection = new SqliteConnection(connectionString))
         {
@@ -19,7 +19,7 @@ public class PresupuestosRepository
             {
 
                 command.Parameters.AddWithValue("@Nombre", pres.NombreDestinatario);
-                command.Parameters.AddWithValue("@Fecha",  DateTime.Now.ToString("yyyy-MM-dd"));
+                command.Parameters.AddWithValue("@Fecha",  pres.Fecha);
                 
                 command.ExecuteNonQuery();
             }
@@ -51,6 +51,7 @@ public class PresupuestosRepository
                             {
                                 IdPresupuesto = reader.GetInt32(0),
                                 NombreDestinatario = reader.GetString(1),
+                                Fecha = reader.GetString(2)
                             };
                         presupuestos.Add(presupuesto);
                     }
@@ -71,7 +72,7 @@ public class PresupuestosRepository
                              FROM Presupuestos p 
                              LEFT JOIN PresupuestosDetalle pd USING (idPresupuesto)
                              LEFT JOIN Productos pr USING (idProducto)
-                             WHERE idPresupuesto=$id";
+                             WHERE idPresupuesto=@id";
         Presupuestos presupuesto = new Presupuestos();
 
         using (var connection = new SqliteConnection(connectionString))
@@ -90,6 +91,7 @@ public class PresupuestosRepository
                     {
                         presupuesto.IdPresupuesto = reader.GetInt32(0);  // Primer columna: IdPresupuesto
                         presupuesto.NombreDestinatario = reader.GetString(1); // Segunda columna: NombreDestinatario
+                        presupuesto.Fecha = reader.GetString(2);
                             
                         // Verifica si el idProducto es nulo (es decir, si hay detalles de presupuesto)
                         if (!reader.IsDBNull(3)) // Si idProducto no es null
@@ -111,7 +113,7 @@ public class PresupuestosRepository
 
 
     public void AgregarDetalle(int id, int producto, int cantidad){
-        string queryString = @"INSERT INTO PresupuestosDetalle (idPresupuesto, idProducto, Cantidad) VALUES (@Idpres, @Idprod, @Cantidad);";
+        string queryString = @"INSERT INTO PresupuestosDetalle (idPresupuesto, idProducto, Cantidad) VALUES (@Idpres, @Idprod, @Cantidad)";
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
@@ -127,7 +129,7 @@ public class PresupuestosRepository
     }
 
     public void EliminarDetalle(int id, int producto){
-        string queryString = @"DELETE FROM PresupuestosDetalle WHERE idPresupuesto=@Idpres AND idProducto = @Idprod;";
+        string queryString = @"DELETE FROM PresupuestosDetalle WHERE idPresupuesto = @Idpres AND idProducto = @Idprod";
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
@@ -142,33 +144,41 @@ public class PresupuestosRepository
     }
 
 
-    public void EliminarPresupuesto(int id)
+public void EliminarPresupuesto(int id)
+{
+    string queryDetalle = @"DELETE FROM PresupuestosDetalle WHERE idPresupuesto = @Id";
+    string queryPresupuesto = @"DELETE FROM Presupuestos WHERE idPresupuesto = @Id";
+
+    using (SqliteConnection connection = new SqliteConnection(connectionString))
     {
-        string query = @"DELETE FROM Presupuestos WHERE idPresupuesto = @IdP;";
-        string query2 = @"DELETE FROM PresupuestosDetalle WHERE idPresupuesto = @Id;";
-        using (SqliteConnection connection = new SqliteConnection(connectionString))
+        connection.Open();
+
+        using (SqliteCommand commandDetalle = new SqliteCommand(queryDetalle, connection))
         {
-            connection.Open();
-            SqliteCommand command = new SqliteCommand(query2, connection);
-            SqliteCommand command2 = new SqliteCommand(query, connection);
-            command.Parameters.AddWithValue("@IdP", id);
-            command2.Parameters.AddWithValue("@Id", id);
-            command2.ExecuteNonQuery();
-            command.ExecuteNonQuery();
-            connection.Close();
+            commandDetalle.Parameters.AddWithValue("@Id", id);
+            commandDetalle.ExecuteNonQuery(); // 🔹 Primero eliminamos los detalles
+        }
+
+        using (SqliteCommand commandPresupuesto = new SqliteCommand(queryPresupuesto, connection))
+        {
+            commandPresupuesto.Parameters.AddWithValue("@Id", id);
+            commandPresupuesto.ExecuteNonQuery(); // 🔹 Luego eliminamos el presupuesto
         }
     }
+}
+
 
     public void ModificarPresupuesto(Presupuestos presupuesto)
     {
 
-        string query = @"UPDATE Presupuestos SET NombreDestinatario = @destinatario WHERE idPresupuesto = @Id";
+        string query = @"UPDATE Presupuestos SET NombreDestinatario = @destinatario, FechaCreacion = @date WHERE idPresupuesto = @Id";
 
         using (SqliteConnection connection = new SqliteConnection(connectionString))
         {
             connection.Open();
             SqliteCommand command = new SqliteCommand(query,connection);
             command.Parameters.AddWithValue("@destinatario", presupuesto.NombreDestinatario);
+            command.Parameters.AddWithValue("@date", presupuesto.Fecha);
             command.Parameters.AddWithValue("@Id", presupuesto.IdPresupuesto);
             command.ExecuteNonQuery();
             connection.Close();            
