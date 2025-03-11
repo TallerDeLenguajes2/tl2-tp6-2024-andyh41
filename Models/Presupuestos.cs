@@ -1,35 +1,36 @@
 
+using Microsoft.AspNetCore.Mvc;
+
 namespace Models;
 
 public class Presupuestos
 {
     public static float IVA = 0.21f;
-
-    private static int autoincremento = 1;
+    
     private int idPresupuesto;
     
-    private string nombreDestinatario;
+    private Cliente cliente;
 
     private List<PresupuestoDetalle> detalle= new List<PresupuestoDetalle>();
 
     string fecha;
 
-    public Presupuestos(string nombreDestinatario, string fech)
+    public Presupuestos(int id, Cliente client, string fech)
     {
-        IdPresupuesto = ++autoincremento;
-        this.NombreDestinatario = nombreDestinatario;
+
+        idPresupuesto = id;
+        cliente=client;
         fecha = fech;
     }
+    
     public Presupuestos(){
-        IdPresupuesto = ++autoincremento;
-        nombreDestinatario = string.Empty;
-        fecha = DateTime.Now.ToString("yyyy-MM-dd");
+        idPresupuesto=0;
     }
 
     public int IdPresupuesto { get => idPresupuesto; set => idPresupuesto = value; }
-    public string NombreDestinatario { get => nombreDestinatario; set => nombreDestinatario = value; }
     public List<PresupuestoDetalle> Detalle { get => detalle; set => detalle = value; }
     public string Fecha { get => fecha; set => fecha = value; }
+    public Cliente Cliente { get => cliente; set => cliente = value; }
 
     public int MontoPresupuesto() {
         return this.Detalle.Sum(d=> d.Producto.Precio * d.Cantidad);

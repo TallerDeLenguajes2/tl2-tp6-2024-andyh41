@@ -1,4 +1,4 @@
-
+using System.ComponentModel.DataAnnotations;
 namespace Models;
 public class Productos
 {
@@ -15,7 +15,13 @@ public class Productos
     }
 
     public int IdProducto { get => idProducto; set => idProducto = value; }
+
+    [Required(ErrorMessage = "La descripcion es obligatoria")]
+    [StringLength(250, ErrorMessage = "La descripcion no puede tener más de 250 caracteres.")]
     public string Descripcion { get => descripcion; set => descripcion = value; }
+
+    [Required(ErrorMessage = "El precio es obligatorio")]
+    [Range(0, int.MaxValue, ErrorMessage = "El precio debe ser un valor positivo")]
     public int Precio { get => precio; set => precio = value; }
 
 

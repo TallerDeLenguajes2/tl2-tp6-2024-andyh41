@@ -9,26 +9,31 @@ public class PresupuestosRepository
 
     public void CrearPresupuesto(Presupuestos pres)
     {
-        // primero modifica la tabla presupuestos, agregando nombre y fecha
-        string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha)";
+        if (pres == null || pres.Cliente == null || pres.Cliente.ClienteId == 0 || string.IsNullOrEmpty(pres.Fecha))
+        {
+            throw new ArgumentException("El presupuesto o algunos de sus parámetros no son válidos.");
+        }
+
+        string queryString = @"INSERT INTO Presupuestos (ClienteId, FechaCreacion) VALUES (@ClienteId, @Fecha)";
 
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
             using (var command = new SqliteCommand(queryString, connection))
             {
+                // Usar ClienteId y Fecha
+                command.Parameters.AddWithValue("@ClienteId", pres.Cliente.ClienteId);
+                command.Parameters.AddWithValue("@Fecha", pres.Fecha);
 
-                command.Parameters.AddWithValue("@Nombre", pres.NombreDestinatario);
-                command.Parameters.AddWithValue("@Fecha",  pres.Fecha);
-                
                 command.ExecuteNonQuery();
             }
         }
-    } 
+    }
+
 
   
 
-    public List<Presupuestos> ListarPresupuestos() 
+    public List<Presupuestos> ListarPresupuestos()
     {
         var presupuestos = new List<Presupuestos>();
 
@@ -37,25 +42,41 @@ public class PresupuestosRepository
         {
             connection.Open();
 
-            string queryString = @"SELECT * FROM Presupuestos ";
+            // Ajustada la consulta para hacer LEFT JOIN con ON y seleccionar columnas específicas
+            string queryString = @"
+                SELECT 
+                    p.idPresupuesto, p.FechaCreacion, 
+                    c.ClienteId, c.Nombre, c.Email, c.Telefono
+                FROM 
+                    Presupuestos p
+                LEFT JOIN 
+                    Clientes c ON p.ClienteId = c.ClienteId";
 
             using (var command = new SqliteCommand(queryString, connection))
             {
                 using (var reader = command.ExecuteReader())
                 {
-
                     while (reader.Read())
                     {
-                            // Crear un nuevo presupuesto
-                            var presupuesto = new Presupuestos
-                            {
-                                IdPresupuesto = reader.GetInt32(0),
-                                NombreDestinatario = reader.GetString(1),
-                                Fecha = reader.GetString(2)
-                            };
+                        // Crear cliente
+                        var cliente = new Cliente(
+                            reader.GetInt32(2),  // ClienteId (3ra columna en el SELECT)
+                            reader.GetString(3), // Nombre (4ta columna en el SELECT)
+                            reader.GetString(4), // Mail (5ta columna en el SELECT)
+                            reader.GetString(5)  // Telefono (6ta columna en el SELECT)
+                        );
+
+                        // Crear un nuevo presupuesto
+                        var presupuesto = new Presupuestos
+                        (
+                            reader.GetInt32(0), // idPresupuesto (1ra columna en el SELECT)
+                            cliente,
+                            reader.GetString(1) // FechaCreacion (2da columna en el SELECT)
+                        );
+
+                        // Agregar a la lista
                         presupuestos.Add(presupuesto);
                     }
-                    
                 }
             }
         }
@@ -66,49 +87,80 @@ public class PresupuestosRepository
 
 
 
+
     public Presupuestos ObtenerPresupuesto(int id)
     {
-        string queryString = @"SELECT p.idPresupuesto, p.NombreDestinatario, p.FechaCreacion, pr.idProducto, pr.Descripcion, pr.Precio, pd.Cantidad
-                             FROM Presupuestos p 
-                             LEFT JOIN PresupuestosDetalle pd USING (idPresupuesto)
-                             LEFT JOIN Productos pr USING (idProducto)
-                             WHERE idPresupuesto=@id";
-        Presupuestos presupuesto = new Presupuestos();
+        string queryString = @"SELECT 
+                                p.idPresupuesto,
+                                p.FechaCreacion,
+                                p.ClienteId,
+                                c.Nombre, 
+                                c.Email, 
+                                c.Telefono,
+                                pd.idProducto, 
+                                pr.Descripcion AS ProductoNombre,
+                                pr.Precio,
+                                pd.Cantidad
+                            FROM Presupuestos p 
+                            LEFT JOIN Clientes c ON p.ClienteId = c.ClienteId
+                            LEFT JOIN PresupuestosDetalle pd ON p.idPresupuesto = pd.idPresupuesto
+                            LEFT JOIN Productos pr ON pd.idProducto = pr.idProducto
+                            WHERE p.idPresupuesto=@id";
+
+        var presupuesto = new Presupuestos();
 
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
             using (var command = new SqliteCommand(queryString, connection))
             {
-                // Corregir el nombre del parámetro para que sea consistente con la consulta
                 command.Parameters.AddWithValue("@id", id);
 
                 using (var reader = command.ExecuteReader())
                 {
-                   
-                    // Lee los registros
-                    while (reader.Read())
+                    if (reader.HasRows)
                     {
-                        presupuesto.IdPresupuesto = reader.GetInt32(0);  // Primer columna: IdPresupuesto
-                        presupuesto.NombreDestinatario = reader.GetString(1); // Segunda columna: NombreDestinatario
-                        presupuesto.Fecha = reader.GetString(2);
-                            
-                        // Verifica si el idProducto es nulo (es decir, si hay detalles de presupuesto)
-                        if (!reader.IsDBNull(3)) // Si idProducto no es null
+                        while (reader.Read())
                         {
-                            var producto = new Productos(reader.GetInt32(3), reader.GetString(4), reader.GetInt32(5));
-                            var detalle = new PresupuestoDetalle(producto, reader.GetInt32(6)); // Crear el detalle
+                            // Crear un cliente
+                            var cliente = new Cliente(
+                                reader.GetInt32(2), // id cliente
+                                reader.GetString(3), // nombre
+                                reader.GetString(4), // mail
+                                reader.GetString(5)  // telefono
+                            );
 
-                            // Agregar el detalle al presupuesto actual
-                            presupuesto.Detalle.Add(detalle);
+                            if (presupuesto.IdPresupuesto == 0)
+                            {
+                                presupuesto.IdPresupuesto = reader.GetInt32(0); // id presupuesto
+                                presupuesto.Cliente = cliente;
+                                presupuesto.Fecha = reader.GetString(1); // fecha
+                            }
+
+                            if (!reader.IsDBNull(6)) // Verifica si idProducto no es nulo
+                            {
+                                var producto = new Productos(
+                                    reader.GetInt32(6), // idProducto
+                                    reader.GetString(7), // ProductoNombre
+                                    reader.GetInt32(8)  // Precio
+                                );
+                                var detalle = new PresupuestoDetalle(producto, reader.GetInt32(9)); // Crear el detalle
+
+                                presupuesto.Detalle.Add(detalle);
+                            }
                         }
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
             }
         }
-        // Devuelve el presupuesto si existe, de lo contrario, devuelve null
         return presupuesto;
     }
+
+
 
 
 
@@ -170,14 +222,28 @@ public void EliminarPresupuesto(int id)
 
     public void ModificarPresupuesto(Presupuestos presupuesto)
     {
+        if (presupuesto == null)
+        {
+            throw new ArgumentNullException(nameof(presupuesto), "El presupuesto no puede ser nulo.");
+        }
 
-        string query = @"UPDATE Presupuestos SET NombreDestinatario = @destinatario, FechaCreacion = @date WHERE idPresupuesto = @Id";
+        if (presupuesto.Cliente == null)
+        {
+            throw new ArgumentNullException(nameof(presupuesto.Cliente), "El cliente no puede ser nulo.");
+        }
+
+        if (string.IsNullOrEmpty(presupuesto.Fecha))
+        {
+            throw new ArgumentException("La fecha del presupuesto no puede estar vacía.");
+        }
+
+        string query = @"UPDATE Presupuestos SET ClienteId = @destinatario, FechaCreacion = @date WHERE idPresupuesto = @Id";
 
         using (SqliteConnection connection = new SqliteConnection(connectionString))
         {
             connection.Open();
             SqliteCommand command = new SqliteCommand(query,connection);
-            command.Parameters.AddWithValue("@destinatario", presupuesto.NombreDestinatario);
+            command.Parameters.AddWithValue("@destinatario", presupuesto.Cliente.ClienteId);
             command.Parameters.AddWithValue("@date", presupuesto.Fecha);
             command.Parameters.AddWithValue("@Id", presupuesto.IdPresupuesto);
             command.ExecuteNonQuery();

@@ -1,0 +1,20 @@
+@model Cliente
+
+<section>
+    <h2 class="border-bottom my-3 w-50 mx-auto">Eliminar Cliente</h2>
+
+    <div class="container mt-4">
+        <div class="mb-4">
+            <h2 class="text-center">Cliente</h2>
+            <p class="text-center"><strong>Nombre:</strong> @Model.Nombre</p>
+            <p class="text-center"><strong>Email:</strong> @Model.Email</p>
+            <p class="text-center"><strong>Telefono:</strong> @Model.Telefono</p>
+        </div>
+        <p class="text-center">¿Desea eliminar este producto?</p>
+        <div class="text-center">
+            <a asp-controller="Cliente" asp-action="ConfirmarEliminacion" asp-route-id="@Model.ClienteId" class="btn btn-success">Eliminar</a>
+            <a asp-controller="Cliente" asp-action="Index" class="btn btn-danger">Cancelar</a>
+        </div>
+    </div>
+
+</section>
