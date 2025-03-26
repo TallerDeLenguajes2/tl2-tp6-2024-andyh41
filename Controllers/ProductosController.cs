@@ -6,12 +6,13 @@ namespace Controllers;
 public class ProductosController : Controller
 {
     private readonly ILogger<ProductosController> _logger;
-    private readonly ProductosRepository _repositorioProductos;
+    private readonly IProductosRepository _repositorioProductos;
 
-    public ProductosController(ILogger<ProductosController> logger)
+    // Inyección de dependencias mediante constructor
+    public ProductosController(ILogger<ProductosController> logger, IProductosRepository repositorioProductos)
     {
         _logger = logger;
-        _repositorioProductos = new ProductosRepository();
+        _repositorioProductos = repositorioProductos;  // Asignación correcta de la dependencia
     }
 
     [HttpGet]

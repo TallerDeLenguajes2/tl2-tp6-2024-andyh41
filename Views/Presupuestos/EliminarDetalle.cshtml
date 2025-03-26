@@ -1,17 +1,30 @@
 @{
     ViewData["Title"] = "Eliminar productos";
     var detalles = (IEnumerable<SelectListItem>) ViewData["Productos"];
+    var username = Context.Session.GetString("Username");
+    var role = Context.Session.GetString("Role");
 }
 @model int
 
-<form asp-controller="Presupuestos" asp-action="EliminarElDetalle" method="post" class="container mt-4">
+@if (string.IsNullOrEmpty(username))
+{
+    <script>
+        window.location.href = '@Url.Action("Index", "Login")';
+    </script>
+}
+else
+{
+    @if (role == "Administrador"){
+        <form asp-controller="Presupuestos" asp-action="EliminarElDetalle" method="post" class="container mt-4">
 
-    <input type="hidden" name="idPresupuesto" id="idPresupuesto" value="@Model">
-    
-    <div class="mb-3">
-        <label for="idProducto" class="form-label">Producto</label>
-        <select name="idProducto" id="idProducto" asp-items="@detalles" class="form-select"></select>
-    </div>
+            <input type="hidden" name="idPresupuesto" id="idPresupuesto" value="@Model">
+            
+            <div class="mb-3">
+                <label for="idProducto" class="form-label">Producto</label>
+                <select name="idProducto" id="idProducto" asp-items="@detalles" class="form-select"></select>
+            </div>
 
-    <button type="submit" class="btn btn-primary mt-2">Eliminar Producto</button>
-</form>
+            <button type="submit" class="btn btn-primary mt-2">Eliminar Producto</button>
+        </form>
+    }
+}

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Models;
 
 namespace Controllers;
@@ -15,11 +16,27 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        var username = HttpContext.Session.GetString("Username");
+
+        // Si no se encuentra el username en la sesión, redirigir a la página de login
+        if (string.IsNullOrEmpty(username))
+        {
+            return RedirectToAction("Index", "Login");
+        }
+
         return View();
     }
 
     public IActionResult Privacy()
     {
+        var username = Request.Cookies["AuthCookie"];
+
+        // Si no se encuentra el username en la sesión, redirigir a la página de login
+        if (string.IsNullOrEmpty(username))
+        {
+            return RedirectToAction("Index", "Login");
+        }
+
         return View();
     }
 

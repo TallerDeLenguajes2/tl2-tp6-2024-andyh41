@@ -3,7 +3,7 @@ using Models;
 
 namespace Repositorios
 {
-    public class ProductosRepository
+    public class ProductosRepository : IProductosRepository
     {
         private readonly string connectionString = "Data Source=db/Tienda.db;Cache=Shared";
 

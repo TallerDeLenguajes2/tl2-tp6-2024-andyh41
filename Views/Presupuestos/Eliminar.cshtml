@@ -1,19 +1,35 @@
-@model Presupuestos   
+@model Presupuestos  
 
-<section>
-    <h2 class="border-bottom my-3 w-50 mx-auto">Eliminar Presupuesto</h2>
+@{
+    var username = Context.Session.GetString("Username");
+    var role = Context.Session.GetString("Role");
+}
+@if (string.IsNullOrEmpty(username))
+{
+    <script>
+        window.location.href = '@Url.Action("Index", "Login")';
+    </script>
+}
+else
+{
+    @if (role == "Administrador"){
+        <section>
+        <h2 class="border-bottom my-3 w-50 mx-auto">Eliminar Presupuesto</h2>
 
-    <div class="container mt-4">
-        <div class="mb-4">
-            <h2 class="text-center">Presupuesto</h2>
-            <p class="text-center"><strong>Nombre:</strong> @Model.NombreDestinatario</p>
-            <p class="text-center"><strong>Fecha:</strong> @Model.Fecha</p>
+        <div class="container mt-4">
+            <div class="mb-4">
+                <h2 class="text-center">Presupuesto</h2>
+                <p class="text-center"><strong>Nombre:</strong> @Model.NombreDestinatario</p>
+                <p class="text-center"><strong>Fecha:</strong> @Model.Fecha</p>
+            </div>
+            <p class="text-center">¿Desea eliminar este presupuesto?</p>
+            <div class="text-center">
+                <a asp-controller="Presupuestos" asp-action="ConfirmarEliminacion" asp-route-id="@Model.IdPresupuesto" class="btn btn-success">Eliminar</a>
+                <a asp-controller="Presupuestos" asp-action="Index" class="btn btn-danger">Cancelar</a>
+            </div>
         </div>
-        <p class="text-center">¿Desea eliminar este presupuesto?</p>
-        <div class="text-center">
-            <a asp-controller="Presupuestos" asp-action="ConfirmarEliminacion" asp-route-id="@Model.IdPresupuesto" class="btn btn-success">Eliminar</a>
-            <a asp-controller="Presupuestos" asp-action="Index" class="btn btn-danger">Cancelar</a>
-        </div>
-    </div>
 
-</section>
+        </section>
+    }
+}
+

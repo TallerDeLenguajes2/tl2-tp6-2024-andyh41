@@ -8,16 +8,20 @@ namespace Controllers;
 public class PresupuestosController : Controller
 {
     private readonly ILogger<PresupuestosController> _logger;
-    private readonly PresupuestosRepository _repositorioPresupuestos;
-    private readonly ProductosRepository _repositorioProductos;
+    private readonly IPresupuestosRepository _repositorioPresupuestos;
+    private readonly IProductosRepository _repositorioProductos;
+    private readonly IUsuarioRepository _repositorioUsuario;
 
-
-
-    public PresupuestosController(ILogger<PresupuestosController> logger)
+    // Constructor con inyección de dependencias
+    public PresupuestosController(ILogger<PresupuestosController> logger, 
+                                   IPresupuestosRepository repositorioPresupuestos,
+                                   IProductosRepository repositorioProductos,
+                                   IUsuarioRepository repositorioUsuario)
     {
         _logger = logger;
-        _repositorioPresupuestos = new PresupuestosRepository();
-        _repositorioProductos = new  ProductosRepository();
+        _repositorioPresupuestos = repositorioPresupuestos;
+        _repositorioProductos = repositorioProductos;
+        _repositorioUsuario = repositorioUsuario;
     }
 
     [HttpGet]
@@ -36,23 +40,53 @@ public class PresupuestosController : Controller
     [HttpGet]
     public IActionResult Crear()
     {
-        return View();
-    }
+        var viewModel = new PresupuestoViewModel
+        {
+            Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
+            {
+                Value = p.IdUsuario.ToString(),
+                Text = p.Nombre
+            }).ToList()
+        };
 
+        return View(viewModel);
+    }
 
     [HttpPost]
-    public IActionResult Crear(Presupuestos presupuestos)
+    public IActionResult Crear(PresupuestoViewModel viewModel)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            _repositorioPresupuestos.CrearPresupuesto(presupuestos);
-            return RedirectToAction(nameof(Index));
+            // Reasignar la lista de clientes en caso de que haya un error de validación
+            viewModel.Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
+            {
+                Value = p.IdUsuario.ToString(),
+                Text = p.Username
+            }).ToList();
+            return View(viewModel);
         }
-        return View(presupuestos);
+
+        var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
+        if (cliente == null)
+        {
+            ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
+            return View(viewModel);
+        }
+
+        var presupuesto = new Presupuestos
+        {
+            NombreDestinatario = cliente.Username,
+            Fecha = viewModel.Fecha
+        };
+
+        _repositorioPresupuestos.CrearPresupuesto(presupuesto);
+        return RedirectToAction(nameof(Index));
     }
+    
 
 
-    [HttpGet]
+
+   [HttpGet]
     public IActionResult Modificar(int id)
     {
         var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
@@ -60,19 +94,70 @@ public class PresupuestosController : Controller
         {
             return NotFound();
         }
-        return View(presupuesto);
+
+        // Crear el ViewModel y llenarlo con los datos del presupuesto
+        var viewModel = new PresupuestoViewModel
+        {
+            PresupuestoId = presupuesto.IdPresupuesto,
+            Fecha = presupuesto.Fecha,
+            Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
+            {
+                Value = p.IdUsuario.ToString(),
+                Text = p.Nombre
+            }).ToList()
+        };
+
+        return View(viewModel);
     }
 
-    [HttpPost] 
-    public IActionResult Modificar(Presupuestos presupuesto)
+    [HttpPost]
+    public IActionResult Modificar(PresupuestoViewModel viewModel)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            _repositorioPresupuestos.ModificarPresupuesto(presupuesto);
-            return RedirectToAction(nameof(Index));
+            // Recargar la lista de clientes si hay un error de validación
+            viewModel.Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
+            {
+                Value = p.IdUsuario.ToString(),
+                Text = p.Nombre
+            }).ToList();
+            return View(viewModel);
         }
-        return View(presupuesto);
+
+        // Obtener el presupuesto existente
+        var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(viewModel.PresupuestoId);
+        if (presupuesto == null)
+        {
+            ModelState.AddModelError(string.Empty, "Presupuesto no encontrado.");
+            return View(viewModel);
+        }
+
+        // Verificar que el usuario seleccionado exista
+        var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
+        if (cliente == null)
+        {
+            ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
+            return View(viewModel);
+        }
+
+        // Actualizar los datos del presupuesto
+        presupuesto.NombreDestinatario = cliente.Username;
+        presupuesto.Fecha = viewModel.Fecha;
+
+        // Validar datos antes de actualizar
+        if (string.IsNullOrEmpty(presupuesto.NombreDestinatario))
+        {
+            ModelState.AddModelError(string.Empty, "Fecha o Cliente no válidos.");
+            return View(viewModel);
+        }
+
+        // Guardar los cambios en el repositorio
+        _repositorioPresupuestos.ModificarPresupuesto(presupuesto);
+
+        return RedirectToAction(nameof(Index));
     }
+
+
 
 
 
