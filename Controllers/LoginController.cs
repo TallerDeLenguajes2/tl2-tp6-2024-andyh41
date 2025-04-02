@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
 using Models;
-using Repositorios;
 
 namespace Controllers;
 public class LoginController : Controller
@@ -88,6 +84,39 @@ public class LoginController : Controller
             _logger.LogError(ex, "Error durante el proceso de cierre de sesión.");
             ViewBag.ErrorMessage = "Ocurrió un error inesperado. Por favor, intente nuevamente más tarde.";
             return View("Error");
+        }
+    }
+
+     public IActionResult CrearUsuario()
+    {
+        try
+        {
+            return View();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.ToString());
+            ViewBag.ErrorMessage = "No se pudo ejecutar la accion requerida";
+            return View("Index");
+        }
+    }
+
+    [HttpPost]
+
+    public IActionResult AltaUsuario(LoginViewModel usuarioVM)
+    {
+        try
+        {            
+            if(!ModelState.IsValid) return RedirectToAction ("CrearUsuario");
+            var usuario = new Usuario(usuarioVM);
+            _userRepository.CrearUsuario(usuario);
+            return RedirectToAction("Index");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.ToString());
+            ViewBag.ErrorMessage = "No se puso autenticar el usuario";
+            return View("Index");
         }
     }
 }

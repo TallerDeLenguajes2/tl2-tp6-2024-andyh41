@@ -1,58 +1,43 @@
 @model List<Presupuestos>
 
-@{
-    var username = Context.Session.GetString("Username");
-    var role = Context.Session.GetString("Role");
-}
 
-@if (string.IsNullOrEmpty(username))
-{
-    <script>
-        window.location.href = '@Url.Action("Index", "Login")';
-    </script>
-}
-else
-{
-    <section>
-        <h2 class="border-bottom mb-4">Presupuestos</h2>
 
-        @if (role == "Administrador")
-        {
-            <div class="text-center">
-                <a asp-controller="Presupuestos" asp-action="Crear" class="btn btn-success">Crear Presupuesto</a>
-            </div>
-        }
+<section>
+    <h2 class="border-bottom mb-4">Presupuestos</h2>
 
-        <table>
-            <caption>Listado de Presupuestos</caption>
+    
+        <div class="text-center">
+            <a asp-controller="Presupuestos" asp-action="Crear" class="btn btn-success">Crear Presupuesto</a>
+        </div>
+    
 
-            <thead>
+    <table>
+        <caption>Listado de Presupuestos</caption>
+
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (Presupuestos pres in Model)
+            {
                 <tr>
-                    <th>Nombre</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
+                    <td>@pres.NombreDestinatario</td>
+                    <td>@pres.Fecha</td>
+                    <td>
+                        <a asp-controller="Presupuestos" asp-action="VerPresupuesto" asp-route-id="@pres.IdPresupuesto" class="btn btn-info">Mostrar Detalle</a>
+                        <a asp-controller="Presupuestos" asp-action="Modificar" asp-route-id="@pres.IdPresupuesto" class="btn btn-warning">Modificar</a>
+                        <a asp-controller="Presupuestos" asp-action="Eliminar" asp-route-id="@pres.IdPresupuesto" class="btn btn-danger">Eliminar Presupuesto</a>
+                        <a asp-controller="Presupuestos" asp-action="EliminarDetalle" asp-route-id="@pres.IdPresupuesto" class="btn btn-danger">Eliminar Detalle</a>
+                        
+                    </td>
                 </tr>
-            </thead>
+            }
+        </tbody>
+    </table>
+</section>
 
-            <tbody>
-                @foreach (Presupuestos pres in Model)
-                {
-                    <tr>
-                        <td>@pres.NombreDestinatario</td>
-                        <td>@pres.Fecha</td>
-                        <td>
-                            <a asp-controller="Presupuestos" asp-action="VerPresupuesto" asp-route-id="@pres.IdPresupuesto" class="btn btn-info">Mostrar Detalle</a>
-
-                            @if (role == "Administrador")
-                            {
-                                <a asp-controller="Presupuestos" asp-action="Modificar" asp-route-id="@pres.IdPresupuesto" class="btn btn-warning">Modificar</a>
-                                <a asp-controller="Presupuestos" asp-action="Eliminar" asp-route-id="@pres.IdPresupuesto" class="btn btn-danger">Eliminar Presupuesto</a>
-                                <a asp-controller="Presupuestos" asp-action="EliminarDetalle" asp-route-id="@pres.IdPresupuesto" class="btn btn-danger">Eliminar Detalle</a>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </section>
-}

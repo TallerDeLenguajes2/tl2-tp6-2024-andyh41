@@ -24,22 +24,46 @@ public class PresupuestosController : Controller
         _repositorioUsuario = repositorioUsuario;
     }
 
-    [HttpGet]
+ [HttpGet]
     public IActionResult Index()
     {
-        return View(_repositorioPresupuestos.ListarPresupuestos());
+        try
+        {
+            var presupuestos = _repositorioPresupuestos.ListarPresupuestos();
+            return View(presupuestos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al obtener los presupuestos: {ex.Message}");
+            return View("Error"); // Asegúrate de tener una vista de error
+        }
     }
-
 
     [HttpGet]
     public IActionResult VerPresupuesto(int id)
     {
-        return View(_repositorioPresupuestos.ObtenerPresupuesto(id));
+        try
+        {
+            var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
+            if (presupuesto == null)
+            {
+                return NotFound(); // 404 si el presupuesto no se encuentra
+            }
+            return View(presupuesto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al obtener el presupuesto: {ex.Message}");
+            return View("Error");
+        }
     }
 
+
+    [accessLevel("Administrador")]
     [HttpGet]
     public IActionResult Crear()
     {
+        
         var viewModel = new PresupuestoViewModel
         {
             Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
@@ -48,16 +72,17 @@ public class PresupuestosController : Controller
                 Text = p.Nombre
             }).ToList()
         };
-
+        
         return View(viewModel);
     }
 
+    [accessLevel("Administrador")]
     [HttpPost]
     public IActionResult Crear(PresupuestoViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            // Reasignar la lista de clientes en caso de que haya un error de validación
+            // Reasignar la lista de usuarios en caso de validación incorrecta
             viewModel.Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
             {
                 Value = p.IdUsuario.ToString(),
@@ -66,36 +91,42 @@ public class PresupuestosController : Controller
             return View(viewModel);
         }
 
-        var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
-        if (cliente == null)
+        try
         {
-            ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
-            return View(viewModel);
+            var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
+            if (cliente == null)
+            {
+                ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
+                return View(viewModel);
+            }
+
+            var presupuesto = new Presupuestos
+            {
+                NombreDestinatario = cliente.Username,
+                Fecha = viewModel.Fecha
+            };
+
+            _repositorioPresupuestos.CrearPresupuesto(presupuesto);
+            return RedirectToAction(nameof(Index)); // Redirige a la lista de presupuestos
         }
-
-        var presupuesto = new Presupuestos
+        catch (Exception ex)
         {
-            NombreDestinatario = cliente.Username,
-            Fecha = viewModel.Fecha
-        };
-
-        _repositorioPresupuestos.CrearPresupuesto(presupuesto);
-        return RedirectToAction(nameof(Index));
+            _logger.LogError($"Error al crear el presupuesto: {ex.Message}");
+            return View("Error");
+        }
     }
-    
 
 
-
-   [HttpGet]
+    [accessLevel("Administrador")]
+    [HttpGet]
     public IActionResult Modificar(int id)
     {
         var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
         if (presupuesto == null)
         {
-            return NotFound();
+            return NotFound(); // 404 si el presupuesto no se encuentra
         }
 
-        // Crear el ViewModel y llenarlo con los datos del presupuesto
         var viewModel = new PresupuestoViewModel
         {
             PresupuestoId = presupuesto.IdPresupuesto,
@@ -110,12 +141,13 @@ public class PresupuestosController : Controller
         return View(viewModel);
     }
 
+
+    [accessLevel("Administrador")]
     [HttpPost]
     public IActionResult Modificar(PresupuestoViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            // Recargar la lista de clientes si hay un error de validación
             viewModel.Usuario = _repositorioUsuario.ListarUsuario().Select(p => new SelectListItem
             {
                 Value = p.IdUsuario.ToString(),
@@ -124,100 +156,168 @@ public class PresupuestosController : Controller
             return View(viewModel);
         }
 
-        // Obtener el presupuesto existente
-        var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(viewModel.PresupuestoId);
-        if (presupuesto == null)
+        try
         {
-            ModelState.AddModelError(string.Empty, "Presupuesto no encontrado.");
-            return View(viewModel);
-        }
+            var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(viewModel.PresupuestoId);
+            if (presupuesto == null)
+            {
+                ModelState.AddModelError(string.Empty, "Presupuesto no encontrado.");
+                return View(viewModel);
+            }
 
-        // Verificar que el usuario seleccionado exista
-        var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
-        if (cliente == null)
+            var cliente = _repositorioUsuario.ObtenerUsuario(viewModel.IdUsuario);
+            if (cliente == null)
+            {
+                ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
+                return View(viewModel);
+            }
+
+            presupuesto.NombreDestinatario = cliente.Username;
+            presupuesto.Fecha = viewModel.Fecha;
+
+            if (string.IsNullOrEmpty(presupuesto.NombreDestinatario))
+            {
+                ModelState.AddModelError(string.Empty, "Fecha o Cliente no válidos.");
+                return View(viewModel);
+            }
+
+            _repositorioPresupuestos.ModificarPresupuesto(presupuesto);
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
         {
-            ModelState.AddModelError(string.Empty, "Cliente no encontrado.");
-            return View(viewModel);
+            _logger.LogError($"Error al modificar el presupuesto: {ex.Message}");
+            return View("Error");
         }
-
-        // Actualizar los datos del presupuesto
-        presupuesto.NombreDestinatario = cliente.Username;
-        presupuesto.Fecha = viewModel.Fecha;
-
-        // Validar datos antes de actualizar
-        if (string.IsNullOrEmpty(presupuesto.NombreDestinatario))
-        {
-            ModelState.AddModelError(string.Empty, "Fecha o Cliente no válidos.");
-            return View(viewModel);
-        }
-
-        // Guardar los cambios en el repositorio
-        _repositorioPresupuestos.ModificarPresupuesto(presupuesto);
-
-        return RedirectToAction(nameof(Index));
     }
 
 
-
-
-
+    [accessLevel("Administrador")]
     [HttpGet]
     public IActionResult Eliminar(int id)
     {
         var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
         if (presupuesto == null)
         {
-            return NotFound();
+            return NotFound(); // 404 si el presupuesto no se encuentra
         }
         return View(presupuesto);
     }
 
+
+    [accessLevel("Administrador")]
     [HttpGet]
     public IActionResult ConfirmarEliminacion(int id)
     {
-        _repositorioPresupuestos.EliminarPresupuesto(id);
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            _repositorioPresupuestos.EliminarPresupuesto(id);
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al eliminar el presupuesto: {ex.Message}");
+            return View("Error");
+        }
     }
 
 
-
+    [accessLevel("Administrador")]
     [HttpGet]
-    public IActionResult AgregarProductoDetalle(int id) {
-        ViewData["Productos"] = _repositorioProductos.ListarProductos()
-                                                    .Select(p => new SelectListItem()
-                                                                {
-                                                                    Value = p.IdProducto.ToString(),
-                                                                    Text = p.Descripcion
-                                                                });
-        return View(id);
+    public IActionResult AgregarProductoDetalle(int id)
+    {
+        try
+        {
+            ViewData["Productos"] = _repositorioProductos.ListarProductos()
+                                                        .Select(p => new SelectListItem()
+                                                        {
+                                                            Value = p.IdProducto.ToString(),
+                                                            Text = p.Descripcion
+                                                        });
+
+            return View(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al cargar productos para agregar al presupuesto: {ex.Message}");
+            return View("Error"); // Asegúrate de tener una vista de error
+        }
     }
 
+
+    [accessLevel("Administrador")]
     [HttpPost]
-    public IActionResult AgregarProductoDetalle(int idPresupuesto, int cantidad, int producto) {
-        _repositorioPresupuestos.AgregarDetalle(idPresupuesto, producto, cantidad);
-        return RedirectToAction(nameof(Index));
+    public IActionResult AgregarProductoDetalle(int idPresupuesto, int cantidad, int producto)
+    {
+        try
+        {
+            // Validar los parámetros
+            if (cantidad <= 0 || producto <= 0)
+            {
+                ModelState.AddModelError(string.Empty, "Cantidad o Producto inválidos.");
+                return RedirectToAction(nameof(AgregarProductoDetalle), new { id = idPresupuesto });
+            }
+
+            // Llamada al repositorio para agregar el detalle al presupuesto
+            _repositorioPresupuestos.AgregarDetalle(idPresupuesto, producto, cantidad);
+            return RedirectToAction(nameof(Index)); // Redirige a la lista de presupuestos
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al agregar producto al presupuesto: {ex.Message}");
+            return View("Error");
+        }
     }
 
 
+    [accessLevel("Administrador")]
     [HttpGet]
     public IActionResult EliminarDetalle(int id)
     {
-        Presupuestos presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
-        ViewData["Productos"] = presupuesto.Detalle.Select(p => new SelectListItem
+        try
         {
-            Value = p.Producto.IdProducto.ToString(), 
-            Text = p.Producto.Descripcion 
-        });
+            var presupuesto = _repositorioPresupuestos.ObtenerPresupuesto(id);
+            if (presupuesto == null)
+            {
+                return NotFound(); // 404 si el presupuesto no se encuentra
+            }
 
-        return View(id);
+            ViewData["Productos"] = presupuesto.Detalle.Select(p => new SelectListItem
+            {
+                Value = p.Producto.IdProducto.ToString(),
+                Text = p.Producto.Descripcion
+            });
+
+            return View(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al cargar los detalles para eliminar: {ex.Message}");
+            return View("Error");
+        }
     }
 
 
+    [accessLevel("Administrador")]
     [HttpPost]
     public IActionResult EliminarElDetalle(int idPresupuesto, int idProducto)
     {
-        _repositorioPresupuestos.EliminarDetalle(idPresupuesto, idProducto);
-        return RedirectToAction (nameof(Index));
-    }
+        try
+        {
+            if (idProducto <= 0)
+            {
+                ModelState.AddModelError(string.Empty, "Producto no válido.");
+                return RedirectToAction(nameof(EliminarDetalle), new { id = idPresupuesto });
+            }
 
-}    
+            // Llamada al repositorio para eliminar el detalle del presupuesto
+            _repositorioPresupuestos.EliminarDetalle(idPresupuesto, idProducto);
+            return RedirectToAction(nameof(Index)); // Redirige a la lista de presupuestos
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error al eliminar el detalle del presupuesto: {ex.Message}");
+            return View("Error");
+        }
+    }
+}

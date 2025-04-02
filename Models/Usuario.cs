@@ -9,6 +9,7 @@ public class Usuario
     private string username;
     private string clave;
     private string nivel;
+    private LoginViewModel usuarioVM;
 
     public Usuario(int idUsuario, string nombre, string usuario, string clave, string nivel)
     {
@@ -25,6 +26,15 @@ public class Usuario
         username = string.Empty;
         clave = string.Empty;
         nivel = "Ninguno";
+    }
+
+    public Usuario(LoginViewModel usuarioVM)
+    {
+        this.idUsuario = 0;
+        this.nombre = usuarioVM.Nombre;
+        this.username = usuarioVM.Username;
+        this.clave = usuarioVM.Password;
+        this.nivel = usuarioVM.AccessLevel;
     }
 
     public int IdUsuario { get => idUsuario; set => idUsuario = value; }

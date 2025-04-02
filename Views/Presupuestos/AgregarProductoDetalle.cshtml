@@ -1,37 +1,22 @@
 @{
     ViewData["Title"] = "Agregar productos";
     var productos = (IEnumerable<SelectListItem>) ViewData["Productos"];
-    var username = Context.Session.GetString("Username");
-    var role = Context.Session.GetString("Role");
 }
 @model int
 
-@if (string.IsNullOrEmpty(username))
-{
-    <script>
-        window.location.href = '@Url.Action("Index", "Login")';
-    </script>
-}
-else
-{
-    @if (role == "Administrador"){
-        <form asp-controller="Presupuestos" asp-action="AgregarProductoDetalle" method="post" class="container mt-4">
+<form asp-controller="Presupuestos" asp-action="AgregarProductoDetalle" method="post" class="container mt-4">
 
-        <input type="hidden" name="idPresupuesto" id="idPresupuesto" value="@Model">
-        
-        <div class="mb-3">
-            <label for="Producto">Seleccione el producto:</label>
-            <select name="producto" id="producto" asp-items="@productos" class="form-select"></select>
-        </div>
+    <input type="hidden" name="idPresupuesto" id="idPresupuesto" value="@Model">
+    
+    <div class="mb-3">
+        <label for="Producto">Seleccione el producto:</label>
+        <select name="producto" id="producto" asp-items="@productos" class="form-select"></select>
+    </div>
 
-        <div class="form-group">
-            <label for="cantidad" class="form-label">Cantidad</label>
-            <input name="cantidad" id="cantidad" class="form-control" type="number" required min="1" />
-        </div>
+    <div class="form-group">
+        <label for="cantidad" class="form-label">Cantidad</label>
+        <input name="cantidad" id="cantidad" class="form-control" type="number" required min="1" />
+    </div>
 
-        <button type="submit" class="btn btn-primary mt-2">Agregar Producto</button>
-    </form> 
-    }
-}
-
-
+    <button type="submit" class="btn btn-primary mt-2">Agregar Producto</button>
+</form> 

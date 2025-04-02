@@ -1,24 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Models;
 using Repositorios;
 
 namespace Controllers;
+
 public class ProductosController : Controller
 {
-    private readonly ILogger<ProductosController> _logger;
     private readonly IProductosRepository _repositorioProductos;
+    private readonly ILogger<ProductosController> _logger;
 
-    // Inyección de dependencias mediante constructor
-    public ProductosController(ILogger<ProductosController> logger, IProductosRepository repositorioProductos)
+    public ProductosController(IProductosRepository repositorioProductos, ILogger<ProductosController> logger)
     {
+        _repositorioProductos = repositorioProductos;
         _logger = logger;
-        _repositorioProductos = repositorioProductos;  // Asignación correcta de la dependencia
     }
 
     [HttpGet]
     public IActionResult Index()
     {
-        return View(_repositorioProductos.ListarProductos());
+        try
+        {
+            return View(_repositorioProductos.ListarProductos());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al listar productos");
+            return View("Error");
+        }
     }
 
     [HttpGet]
@@ -30,53 +39,91 @@ public class ProductosController : Controller
     [HttpPost]
     public IActionResult Crear(Productos producto)
     {
-        if (ModelState.IsValid)
+        try
         {
-            _repositorioProductos.CrearProducto(producto);
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                _repositorioProductos.CrearProducto(producto);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(producto);
         }
-        return View(producto);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear producto");
+            return View("Error");
+        }
     }
 
     [HttpGet]
     public IActionResult Modificar(int id)
     {
-        var producto = _repositorioProductos.DetallarProducto(id);
-        if (producto == null)
+        try
         {
-            return NotFound();
+            var producto = _repositorioProductos.DetallarProducto(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            return View(producto);
         }
-        return View(producto);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener el producto para modificar");
+            return View("Error");
+        }
     }
 
     [HttpPost]
     public IActionResult Modificar(Productos producto)
     {
-        if (ModelState.IsValid)
+        try
         {
-            _repositorioProductos.ModificarProducto(producto);
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                _repositorioProductos.ModificarProducto(producto);
+                return RedirectToAction(nameof(Index));
+            }
+            return View(producto);
         }
-        return View(producto);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al modificar producto");
+            return View("Error");
+        }
     }
 
     [HttpGet]
     public IActionResult Eliminar(int id)
     {
-        var producto = _repositorioProductos.DetallarProducto(id);
-        if (producto == null)
+        try
         {
-            return NotFound();
+            var producto = _repositorioProductos.DetallarProducto(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            return View(producto);
         }
-        return View(producto);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener producto para eliminar");
+            return View("Error");
+        }
     }
 
     [HttpGet]
     public IActionResult ConfirmarEliminacion(int id)
     {
-        _repositorioProductos.EliminarProducto(id);
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            _repositorioProductos.EliminarProducto(id);
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar producto");
+            return View("Error");
+        }
     }
-
-
 }

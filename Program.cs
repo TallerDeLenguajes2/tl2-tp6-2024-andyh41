@@ -1,7 +1,12 @@
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Repositorios;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews();
+
+// líneas de código a incorporar
+var CadenaDeConexion = builder.Configuration.GetConnectionString("SqliteConexion")!.ToString();
+builder.Services.AddSingleton<string>(CadenaDeConexion);
 
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IProductosRepository, ProductosRepository>();
@@ -15,8 +20,6 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
-builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 

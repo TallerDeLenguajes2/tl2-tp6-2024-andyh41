@@ -5,10 +5,17 @@ namespace Repositorios
 {
     public class ProductosRepository : IProductosRepository
     {
-        private readonly string connectionString = "Data Source=db/Tienda.db;Cache=Shared";
+        private readonly string connectionString;
 
+        public ProductosRepository(string ConnectionString)
+        {
+            connectionString=ConnectionString;
+        }
         public void CrearProducto(Productos producto)
         {
+            if (producto==null)
+            {throw new Exception("Producto inexistente");}
+
             const string sqlQuery = @"INSERT INTO Productos (Descripcion, Precio) VALUES (@Descripcion, @Precio)";
 
             using var connection = new SqliteConnection(connectionString);
@@ -21,6 +28,8 @@ namespace Repositorios
 
         public void ModificarProducto(Productos producto)
         {
+            if (producto==null)
+            {throw new Exception("Producto inexistente");}
             const string sqlQuery = @"UPDATE Productos SET Descripcion = @Descripcion, Precio = @Precio WHERE idProducto = @Id";
 
             using var connection = new SqliteConnection(connectionString);
@@ -56,29 +65,42 @@ namespace Repositorios
                     }
                 }
             }
+            if (productos==null)
+            {throw new Exception("Lista de Productos inexistente");}
             return productos;
         }
 
-        public Productos DetallarProducto(int id)
-        {
-            const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos WHERE idProducto = @Id";
+    public Productos DetallarProducto(int id)
+    {
+        const string sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos WHERE idProducto = @Id";
+        Productos prod = null;
 
-            using var connection = new SqliteConnection(connectionString);
-            connection.Open();
-            using var command = new SqliteCommand(sqlQuery, connection);
-            command.Parameters.AddWithValue("@Id", id);
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return new Productos
-                (
-                    reader.GetInt32(0), // Primer columna: Id
-                    reader.GetString(1), // Segunda columna: Descripcion
-                    reader.GetInt32(2) // Tercera columna: Precio
-                );
-            }
-            return null;
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+
+        using var command = new SqliteCommand(sqlQuery, connection);
+        command.Parameters.AddWithValue("@Id", id);
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            prod = new Productos
+            (
+                reader.GetInt32(0), // Primer columna: Id
+                reader.GetString(1), // Segunda columna: Descripcion
+                reader.GetInt32(2) // Tercera columna: Precio
+            );
         }
+
+        // Si no se encontró el producto, lanzar una excepción
+        if (prod == null)
+        {
+            throw new Exception("Producto inexistente");
+        }
+
+        return prod;
+    }
+
 
         public void EliminarProducto(int id)
         {

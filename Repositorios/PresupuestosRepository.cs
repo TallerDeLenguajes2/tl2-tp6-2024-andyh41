@@ -5,10 +5,18 @@ namespace Repositorios;
 
 public class PresupuestosRepository : IPresupuestosRepository
 {
-    private readonly string connectionString = @"Data Source=db/Tienda.db;Cache=Shared";
+    private readonly string connectionString;
+
+    public PresupuestosRepository(string ConnectionString)
+    {
+        connectionString=ConnectionString;
+    }
+ 
 
     public void CrearPresupuesto(Presupuestos pres)
     {
+        if (pres==null)
+        {throw new Exception("Presupuesto inexistente");}
         // primero modifica la tabla presupuestos, agregando nombre y fecha
         string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha)";
 
@@ -59,7 +67,8 @@ public class PresupuestosRepository : IPresupuestosRepository
                 }
             }
         }
-
+        if (presupuestos==null)
+        {throw new Exception("Listado de Presupuestos inexistente");}
         return presupuestos;
     }
 
@@ -106,7 +115,9 @@ public class PresupuestosRepository : IPresupuestosRepository
                 }
             }
         }
-        // Devuelve el presupuesto si existe, de lo contrario, devuelve null
+        // Devuelve el presupuesto si existe, de lo contrario, devuelve una excepcion
+        if (presupuesto==null)
+        {throw new Exception("Presupuesto inexistente");}
         return presupuesto;
     }
 
@@ -170,7 +181,8 @@ public void EliminarPresupuesto(int id)
 
     public void ModificarPresupuesto(Presupuestos presupuesto)
     {
-
+        if (presupuesto==null)
+        {throw new Exception("Presupuesto inexistente");}
         string query = @"UPDATE Presupuestos SET NombreDestinatario = @destinatario, FechaCreacion = @date WHERE idPresupuesto = @Id";
 
         using (SqliteConnection connection = new SqliteConnection(connectionString))

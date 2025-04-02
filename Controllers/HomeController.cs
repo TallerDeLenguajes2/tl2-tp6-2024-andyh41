@@ -16,33 +16,55 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        var username = HttpContext.Session.GetString("Username");
-
-        // Si no se encuentra el username en la sesión, redirigir a la página de login
-        if (string.IsNullOrEmpty(username))
+        try
         {
-            return RedirectToAction("Index", "Login");
-        }
+            var username = HttpContext.Session.GetString("Username");
 
-        return View();
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            return View();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en Index");
+            return View("Error");
+        }
     }
 
     public IActionResult Privacy()
     {
-        var username = Request.Cookies["AuthCookie"];
-
-        // Si no se encuentra el username en la sesión, redirigir a la página de login
-        if (string.IsNullOrEmpty(username))
+        try
         {
-            return RedirectToAction("Index", "Login");
-        }
+            var username = Request.Cookies["AuthCookie"];
 
-        return View();
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            return View();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en Privacy");
+            return View("Error");
+        }
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        try
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en Error");
+            return View("Error");
+        }
     }
 }
