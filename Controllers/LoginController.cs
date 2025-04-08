@@ -52,7 +52,7 @@ public class LoginController : Controller
                 return View("Index", model);
             }
 
-            // Establecer variables de sesión y cookies
+            // Establece variables de sesión y cookies
             HttpContext.Session.SetString("IsAuthenticated", "true");
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Nivel);

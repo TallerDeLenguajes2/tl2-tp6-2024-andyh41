@@ -17,7 +17,7 @@ public class PresupuestosRepository : IPresupuestosRepository
     {
         if (pres==null)
         {throw new Exception("Presupuesto inexistente");}
-        // primero modifica la tabla presupuestos, agregando nombre y fecha
+        
         string queryString = @"INSERT INTO Presupuestos (NombreDestinatario, FechaCreacion) VALUES (@Nombre, @Fecha)";
 
         using (var connection = new SqliteConnection(connectionString))
@@ -40,7 +40,7 @@ public class PresupuestosRepository : IPresupuestosRepository
     {
         var presupuestos = new List<Presupuestos>();
 
-        // Abre la conexión 
+        
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
@@ -89,7 +89,7 @@ public class PresupuestosRepository : IPresupuestosRepository
             connection.Open();
             using (var command = new SqliteCommand(queryString, connection))
             {
-                // Corregir el nombre del parámetro para que sea consistente con la consulta
+                
                 command.Parameters.AddWithValue("@id", id);
 
                 using (var reader = command.ExecuteReader())

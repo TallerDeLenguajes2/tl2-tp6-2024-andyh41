@@ -7,7 +7,7 @@ public class UsuarioDePruebas : IUsuarioRepository
 {
     public void CrearUsuario(Usuario usuario)
     {
-        throw new NotImplementedException();
+        
     }
 
     public Usuario DetallarUsuario(string username, string password)
@@ -17,11 +17,11 @@ public class UsuarioDePruebas : IUsuarioRepository
 
     public List<Usuario> ListarUsuario()
     {
-        throw new NotImplementedException();
+        return new List<Usuario>();
     }
 
     public Usuario ObtenerUsuario(int id)
     {
-        throw new NotImplementedException();
+        return new Usuario();
     }
 }

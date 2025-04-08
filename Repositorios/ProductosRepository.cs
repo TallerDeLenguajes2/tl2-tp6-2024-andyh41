@@ -92,7 +92,7 @@ namespace Repositorios
             );
         }
 
-        // Si no se encontró el producto, lanzar una excepción
+        
         if (prod == null)
         {
             throw new Exception("Producto inexistente");
